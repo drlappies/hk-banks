@@ -1,19 +1,20 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { Container } from "@chakra-ui/react";
+import { Container, Box } from "@chakra-ui/react";
 import { TriangleDownIcon } from "@chakra-ui/icons";
-import Map, { Source, Layer, useMap, Marker } from "react-map-gl";
+import Map, { Source, Layer, useMap, Marker, Popup } from "react-map-gl";
 import axios from "axios";
 import type { FeatureCollection } from "geojson";
 import mapboxgl from "mapbox-gl";
 import { type Bank, type Response } from "./types";
 import Detail from "./components/Detail";
 import Search from "./components/Search";
-import Pin from "./components/Pin";
+import { hover } from "@testing-library/user-event/dist/hover";
 
 function App() {
   const { current: map } = useMap();
   const [banks, setBanks] = useState<Bank[]>([]);
   const [focusedBank, setFocusedBank] = useState<Bank | null>(null);
+  const [hoveredBank, setHoveredBank] = useState<Bank | null>(null);
 
   const fetchBanks = useCallback(async () => {
     let list: Bank[] = [];
@@ -85,10 +86,21 @@ function App() {
 
   const handleMapMouseEnter = (e: mapboxgl.MapLayerMouseEvent) => {
     if (!e.features || !e.features[0]) return;
+    const bank = e.features[0];
+    if (!bank.properties) return;
+    setHoveredBank({
+      address: bank.properties.address,
+      bank_name: bank.properties.bank_name,
+      branch_name: bank.properties.branch_name,
+      district: bank.properties.district,
+      latitude: bank.properties.latitude,
+      longitude: bank.properties.longitude,
+      service_hours: bank.properties.service_hours,
+    });
   };
 
   const handleMapMouseLeave = (e: mapboxgl.MapLayerMouseEvent) => {
-    if (!e.features || !e.features[0]) return;
+    setHoveredBank(null);
   };
 
   useEffect(() => {
@@ -135,6 +147,18 @@ function App() {
           >
             <TriangleDownIcon color={"#fff"} fontSize={"3xl"} />
           </Marker>
+        )}
+        {hoveredBank && (
+          <Popup
+            longitude={parseFloat(hoveredBank.longitude)}
+            latitude={parseFloat(hoveredBank.latitude)}
+            maxWidth={"400px"}
+          >
+            <Box>{hoveredBank.bank_name}</Box>
+            <Box>{hoveredBank.branch_name}</Box>
+            <Box>{hoveredBank.address}</Box>
+            <Box>{hoveredBank.district}</Box>
+          </Popup>
         )}
       </Map>
       <Detail

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { Container } from "@chakra-ui/react";
-import Map, { Source, Layer, useMap } from "react-map-gl";
+import { TriangleDownIcon } from "@chakra-ui/icons";
+import Map, { Source, Layer, useMap, Marker } from "react-map-gl";
 import axios from "axios";
 import type { FeatureCollection } from "geojson";
 import mapboxgl from "mapbox-gl";
-import { BankName, type Bank, type Response } from "./types";
+import { type Bank, type Response } from "./types";
 import Detail from "./components/Detail";
+import Search from "./components/Search";
+import Pin from "./components/Pin";
 
 function App() {
   const { current: map } = useMap();
@@ -24,8 +27,6 @@ function App() {
             lang: "tc", // TODO: support multiple lang,
             pagesize: 1000,
             offset,
-            column: "bank_name",
-            filter: BankName.HSBC,
           },
         }
       );
@@ -112,6 +113,10 @@ function App() {
         onMouseEnter={handleMapMouseEnter}
         onMouseLeave={handleMapMouseLeave}
       >
+        <Search
+          banks={banks}
+          onSearchResultClick={(bank) => setFocusedBank(bank)}
+        />
         <Source id={"banks"} type={"geojson"} data={bankGeoJson}>
           <Layer
             id={"banks-layer"}
@@ -122,6 +127,15 @@ function App() {
             }}
           />
         </Source>
+        {focusedBank && (
+          <Marker
+            longitude={parseFloat(focusedBank.longitude)}
+            latitude={parseFloat(focusedBank.latitude)}
+            offset={[0, -20]}
+          >
+            <TriangleDownIcon color={"#fff"} fontSize={"3xl"} />
+          </Marker>
+        )}
       </Map>
       <Detail
         isOpen={Boolean(focusedBank)}

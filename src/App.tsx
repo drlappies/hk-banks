@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { Container } from "@chakra-ui/react";
-import Map, { Source, Layer } from "react-map-gl";
+import Map, { Source, Layer, useMap } from "react-map-gl";
 import axios from "axios";
 import type { FeatureCollection } from "geojson";
+import mapboxgl from "mapbox-gl";
 import type { Bank, Response } from "./types";
+import Detail from "./components/Detail";
 
 function App() {
+  const { current: map } = useMap();
   const [banks, setBanks] = useState<Bank[]>([]);
+  const [focusedBank, setFocusedBank] = useState<Bank | null>(null);
 
   const fetchBanks = useCallback(async () => {
     let list: Bank[] = [];
@@ -53,28 +57,75 @@ function App() {
     return geojson;
   }, [banks]);
 
+  const handleMapClick = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (!e.features || !e.features[0]) return;
+    const bank = e.features[0];
+    if (!bank.properties) return;
+
+    map?.flyTo({
+      center: [
+        parseFloat(bank.properties.longitude),
+        parseFloat(bank.properties.latitude),
+      ],
+    });
+
+    setFocusedBank({
+      address: bank.properties.address,
+      bank_name: bank.properties.bank_name,
+      branch_name: bank.properties.branch_name,
+      district: bank.properties.district,
+      latitude: bank.properties.latitude,
+      longitude: bank.properties.longitude,
+      service_hours: bank.properties.service_hours,
+    });
+  };
+
+  const handleMapMouseEnter = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (!e.features || !e.features[0]) return;
+  };
+
+  const handleMapMouseLeave = (e: mapboxgl.MapLayerMouseEvent) => {
+    if (!e.features || !e.features[0]) return;
+  };
+
   useEffect(() => {
     fetchBanks();
   }, [fetchBanks]);
 
   return (
-    <Container maxW={"2560px"} h={"100vh"} p={"0"}>
+    <Container
+      maxW={"2560px"}
+      h={"100vh"}
+      p={"0"}
+      position={"relative"}
+      overflow={"hidden"}
+    >
       <Map
+        style={{ position: "absolute" }}
         mapboxAccessToken={process.env.MAPBOX_ACCESS_TOKEN}
         initialViewState={{ longitude: 114.1694, latitude: 22.3193, zoom: 14 }}
-        mapStyle={"mapbox://styles/mapbox/streets-v9"}
+        mapStyle={"mapbox://styles/mapbox/dark-v11"}
+        interactiveLayerIds={["banks-layer"]}
+        onClick={handleMapClick}
+        onMouseEnter={handleMapMouseEnter}
+        onMouseLeave={handleMapMouseLeave}
       >
         <Source id={"banks"} type={"geojson"} data={bankGeoJson}>
           <Layer
-            id={"banks"}
+            id={"banks-layer"}
             type={"circle"}
             paint={{
-              "circle-radius": 10,
-              "circle-color": "#007cbf",
+              "circle-radius": 5,
+              "circle-color": "#FFD700",
             }}
           />
         </Source>
       </Map>
+      <Detail
+        isOpen={Boolean(focusedBank)}
+        bank={focusedBank}
+        onClose={() => setFocusedBank(null)}
+      />
     </Container>
   );
 }

@@ -4,7 +4,7 @@ import Map, { Source, Layer, useMap } from "react-map-gl";
 import axios from "axios";
 import type { FeatureCollection } from "geojson";
 import mapboxgl from "mapbox-gl";
-import type { Bank, Response } from "./types";
+import { BankName, type Bank, type Response } from "./types";
 import Detail from "./components/Detail";
 
 function App() {
@@ -24,6 +24,8 @@ function App() {
             lang: "tc", // TODO: support multiple lang,
             pagesize: 1000,
             offset,
+            column: "bank_name",
+            filter: BankName.HSBC,
           },
         }
       );

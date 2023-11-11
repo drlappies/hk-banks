@@ -1,6 +1,7 @@
 import { Box, IconButton, Text } from "@chakra-ui/react";
 import { CloseIcon } from "@chakra-ui/icons";
 import type { Bank } from "../types";
+import parseServiceHours from "../helpers/parseServiceHours";
 
 export interface Props {
   isOpen: boolean;
@@ -9,6 +10,10 @@ export interface Props {
 }
 
 export default function Detail({ isOpen, onClose, bank }: Props) {
+  if (bank) {
+    parseServiceHours(bank);
+  }
+
   return (
     <Box
       h={"100vh"}

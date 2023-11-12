@@ -7,8 +7,13 @@ import {
   ListIcon,
   Text,
   Select,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  IconButton,
+  Center,
 } from "@chakra-ui/react";
-import { Search2Icon } from "@chakra-ui/icons";
+import { CloseIcon, Search2Icon, SearchIcon } from "@chakra-ui/icons";
 import { useMap } from "react-map-gl";
 import { Bank } from "../types";
 
@@ -71,7 +76,12 @@ export default function Search({
     if (bankName.length <= 0) {
       onDistrictChange("");
     }
-  }, [bankName.length, onDistrictChange]);
+
+    if (address.length > 0) {
+      onDistrictChange("");
+      onBankNameChange("");
+    }
+  }, [address.length, bankName.length, onBankNameChange, onDistrictChange]);
 
   return (
     <Box
@@ -84,7 +94,6 @@ export default function Search({
       color={"#fff"}
     >
       <Select
-        size={"sm"}
         borderRadius={"5px"}
         bgColor={"#222"}
         borderColor={"#FFD700"}
@@ -102,7 +111,6 @@ export default function Search({
       </Select>
       {bankName.length > 0 && (
         <Select
-          size={"sm"}
           borderRadius={"5px"}
           borderColor={"#FFD700"}
           focusBorderColor={"#FFD700"}
@@ -119,35 +127,53 @@ export default function Search({
           ))}
         </Select>
       )}
-      <Input
-        size={"sm"}
-        borderRadius={"5px"}
-        borderColor={"#FFD700"}
-        focusBorderColor={"#FFD700"}
-        borderBottomRadius={results.length > 0 ? "0px" : "5px"}
-        borderBottomColor={"#222"}
-        bgColor={"#222"}
-        placeholder={"地址"}
-        value={address}
-        onChange={(e) => onAddressChange(e.target.value)}
-      />
+      <InputGroup>
+        <InputLeftElement>
+          <SearchIcon />
+        </InputLeftElement>
+        <Input
+          borderRadius={"5px"}
+          borderColor={"#FFD700"}
+          focusBorderColor={"#FFD700"}
+          bgColor={"#222"}
+          placeholder={"地址"}
+          value={address}
+          onChange={(e) => onAddressChange(e.target.value)}
+        />
+        {address.length > 0 && (
+          <InputRightElement>
+            <IconButton
+              variant={"unstyled"}
+              aria-label={"reset search"}
+              onClick={() => onAddressChange("")}
+            >
+              <CloseIcon />
+            </IconButton>
+          </InputRightElement>
+        )}
+      </InputGroup>
       {address.length > 0 && (
         <List
           maxH={"300px"}
           overflow={"scroll"}
           bgColor={"#222"}
-          spacing={"5px"}
-          borderBottomRadius={"5px"}
           boxShadow={"rgba(149, 157, 165, 0.2) 0px 8px 24px;"}
-          pb={"10px"}
         >
+          {address.length > 0 && results.length <= 0 && (
+            <Center minH={"100px"}>沒有結果</Center>
+          )}
           {results.map((result, i) => (
             <ListItem
               key={i}
               display={"flex"}
               alignItems={"center"}
               px={"10px"}
+              py={"10px"}
+              cursor={"pointer"}
               onClick={() => handleSearchResultClick(result)}
+              _hover={{
+                bgColor: "rgba(128,128,128,.2)",
+              }}
             >
               <ListIcon as={Search2Icon} fontSize={"xs"} color={"grey"} />
               <Box>

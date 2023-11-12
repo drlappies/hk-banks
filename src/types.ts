@@ -27,16 +27,9 @@ export interface Parameter {
   lang: string;
 }
 
-export enum BankName {
-  HSBC = "香港上海滙豐銀行",
-  OCBC = "華僑銀行(香港)有限公司",
-  BOC = "中國銀行(香港) 有限公司",
-  CHB = "創興銀行有限公司",
-}
-
 export interface Bank {
   district: string;
-  bank_name: BankName;
+  bank_name: string;
   branch_name: string;
   address: string;
   service_hours: string;

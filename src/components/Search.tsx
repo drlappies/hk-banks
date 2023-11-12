@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import {
   Input,
   Box,
@@ -13,25 +13,23 @@ import { useMap } from "react-map-gl";
 import { Bank } from "../types";
 
 export interface Props {
+  banks: Bank[];
   results: Bank[];
   address: string;
   onAddressChange: (address: string) => void;
   district: string;
-  districtOptions: string[];
   onDistrictChange: (district: string) => void;
   bankName: string;
-  bankNameOptions: string[];
   onBankNameChange: (bankName: string) => void;
   onSearchResultClick: (bank: Bank) => void;
 }
 
 export default function Search({
+  banks,
   address,
   onAddressChange,
   district,
-  districtOptions,
   bankName,
-  bankNameOptions,
   onBankNameChange,
   onDistrictChange,
   onSearchResultClick,
@@ -55,6 +53,26 @@ export default function Search({
     [map, onSearchResultClick]
   );
 
+  const districtOptions = useMemo(() => {
+    const set = new Set<string>();
+    banks
+      .filter((bank) => bank.bank_name === bankName)
+      .forEach((bank) => set.add(bank.district));
+    return Array.from(set);
+  }, [bankName, banks]);
+
+  const bankNameOptions = useMemo(() => {
+    const set = new Set<string>();
+    banks.forEach((bank) => set.add(bank.bank_name));
+    return Array.from(set);
+  }, [banks]);
+
+  useEffect(() => {
+    if (bankName.length <= 0) {
+      onDistrictChange("");
+    }
+  }, [bankName.length, onDistrictChange]);
+
   return (
     <Box
       position={"absolute"}
@@ -65,23 +83,6 @@ export default function Search({
       w={"300px"}
       color={"#fff"}
     >
-      <Select
-        size={"sm"}
-        borderRadius={"5px"}
-        borderColor={"#FFD700"}
-        focusBorderColor={"#FFD700"}
-        bgColor={"#222"}
-        value={district}
-        onChange={(e) => onDistrictChange(e.target.value)}
-        mb={"10px"}
-      >
-        <option value={""}>全部地區</option>
-        {districtOptions.map((district, i) => (
-          <option key={i} value={district}>
-            {district}
-          </option>
-        ))}
-      </Select>
       <Select
         size={"sm"}
         borderRadius={"5px"}
@@ -96,6 +97,23 @@ export default function Search({
         {bankNameOptions.map((bankName, i) => (
           <option key={i} value={bankName}>
             {bankName}
+          </option>
+        ))}
+      </Select>
+      <Select
+        size={"sm"}
+        borderRadius={"5px"}
+        borderColor={"#FFD700"}
+        focusBorderColor={"#FFD700"}
+        bgColor={"#222"}
+        value={district}
+        onChange={(e) => onDistrictChange(e.target.value)}
+        mb={"10px"}
+      >
+        <option value={""}>全部地區</option>
+        {districtOptions.map((district, i) => (
+          <option key={i} value={district}>
+            {district}
           </option>
         ))}
       </Select>

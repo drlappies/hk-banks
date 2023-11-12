@@ -21,7 +21,7 @@ function App() {
 
   const fuse = useMemo(() => {
     return new Fuse(banks, {
-      keys: ["address"],
+      keys: ["address", "branch_name", "district", "bank_name"],
     });
   }, [banks]);
 
@@ -36,26 +36,8 @@ function App() {
         );
     }
 
-    return fuse
-      .search(address)
-      .filter((result) => (district ? result.item.district === district : true))
-      .filter((result) =>
-        bankName ? result.item.bank_name === bankName : true
-      )
-      .map((result) => result.item);
+    return fuse.search(address).map((result) => result.item);
   }, [address, fuse, banks, district, bankName]);
-
-  const searchOptions = useMemo(() => {
-    const districtSet = new Set<string>();
-    banks.forEach((bank) => districtSet.add(bank.district));
-    const bankNameSet = new Set<string>();
-    banks.forEach((bank) => bankNameSet.add(bank.bank_name));
-
-    return {
-      district: Array.from(districtSet),
-      bankName: Array.from(bankNameSet),
-    };
-  }, [banks]);
 
   const fetchBanks = useCallback(async () => {
     let list: Bank[] = [];
@@ -167,13 +149,12 @@ function App() {
         onMouseLeave={handleMapMouseLeave}
       >
         <Search
+          banks={banks}
           address={address}
           onAddressChange={(address) => setAddress(address)}
           district={district}
-          districtOptions={searchOptions.district}
           onDistrictChange={(district) => setDistrict(district)}
           bankName={bankName}
-          bankNameOptions={searchOptions.bankName}
           onBankNameChange={(bankName) => setBankName(bankName)}
           results={results}
           onSearchResultClick={(bank) => setFocusedBank(bank)}

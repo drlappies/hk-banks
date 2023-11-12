@@ -100,23 +100,25 @@ export default function Search({
           </option>
         ))}
       </Select>
-      <Select
-        size={"sm"}
-        borderRadius={"5px"}
-        borderColor={"#FFD700"}
-        focusBorderColor={"#FFD700"}
-        bgColor={"#222"}
-        value={district}
-        onChange={(e) => onDistrictChange(e.target.value)}
-        mb={"10px"}
-      >
-        <option value={""}>全部地區</option>
-        {districtOptions.map((district, i) => (
-          <option key={i} value={district}>
-            {district}
-          </option>
-        ))}
-      </Select>
+      {bankName.length > 0 && (
+        <Select
+          size={"sm"}
+          borderRadius={"5px"}
+          borderColor={"#FFD700"}
+          focusBorderColor={"#FFD700"}
+          bgColor={"#222"}
+          value={district}
+          onChange={(e) => onDistrictChange(e.target.value)}
+          mb={"10px"}
+        >
+          <option value={""}>全部地區</option>
+          {districtOptions.map((district, i) => (
+            <option key={i} value={district}>
+              {district}
+            </option>
+          ))}
+        </Select>
+      )}
       <Input
         size={"sm"}
         borderRadius={"5px"}

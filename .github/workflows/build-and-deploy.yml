@@ -1,0 +1,44 @@
+name: build-and-deploy
+
+run-name: build-and-deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.9.0
+          cahce: 'yarn'
+      - name: install-deps
+        run: yarn install --frozen-lockfile --production
+      - name: build
+        run: yarn build
+      - name: upload-artifact
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: deploy
+        uses: actions/deploy-pages@v2
+
+
+        
+
+
+

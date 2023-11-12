@@ -17,7 +17,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20.9.0
-          cahce: 'yarn'
       - name: install-deps
         run: yarn install --frozen-lockfile --production
       - name: build
@@ -25,6 +24,7 @@ jobs:
       - name: upload-artifact
         uses: actions/upload-artifact@v3
         with:
+          name: 'github-pages'
           path: ./build
 
   deploy:

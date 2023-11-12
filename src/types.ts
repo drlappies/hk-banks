@@ -43,3 +43,9 @@ export interface Bank {
   latitude: string;
   longitude: string;
 }
+
+export enum Language {
+  ENGLISH = "en",
+  TRADITIONAL_CHINESE = "tc",
+  SIMPIFIED_CHINESE = "sc",
+}

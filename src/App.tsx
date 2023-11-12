@@ -5,16 +5,57 @@ import Map, { Source, Layer, useMap, Marker, Popup } from "react-map-gl";
 import axios from "axios";
 import type { FeatureCollection } from "geojson";
 import mapboxgl from "mapbox-gl";
-import { type Bank, type Response } from "./types";
+import Fuse from "fuse.js";
+import { Language, type Bank, type Response } from "./types";
 import Detail from "./components/Detail";
 import Search from "./components/Search";
-import { hover } from "@testing-library/user-event/dist/hover";
 
 function App() {
   const { current: map } = useMap();
+  const [district, setDistrict] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [address, setAddress] = useState("");
   const [banks, setBanks] = useState<Bank[]>([]);
   const [focusedBank, setFocusedBank] = useState<Bank | null>(null);
   const [hoveredBank, setHoveredBank] = useState<Bank | null>(null);
+
+  const fuse = useMemo(() => {
+    return new Fuse(banks, {
+      keys: ["address"],
+    });
+  }, [banks]);
+
+  const results = useMemo(() => {
+    if (address.length <= 0) {
+      return banks
+        .filter((bank) =>
+          district.length > 0 ? bank.district === district : true
+        )
+        .filter((bank) =>
+          bankName.length > 0 ? bank.bank_name === bankName : true
+        );
+    }
+
+    return fuse
+      .search(address)
+      .filter((result) => (district ? result.item.district === district : true))
+      .filter((result) =>
+        bankName ? result.item.bank_name === bankName : true
+      )
+      .map((result) => result.item);
+  }, [address, fuse, banks, district, bankName]);
+
+  const searchOptions = useMemo(() => {
+    const districtSet = new Set<string>();
+    banks.forEach((bank) => districtSet.add(bank.district));
+    const bankNameSet = new Set<string>();
+    banks.forEach((bank) => bankNameSet.add(bank.bank_name));
+
+    return {
+      district: Array.from(districtSet),
+      bankName: Array.from(bankNameSet),
+    };
+  }, [banks]);
 
   const fetchBanks = useCallback(async () => {
     let list: Bank[] = [];
@@ -25,7 +66,7 @@ function App() {
         "https://api.hkma.gov.hk/public/bank-svf-info/banks-branch-locator",
         {
           params: {
-            lang: "tc", // TODO: support multiple lang,
+            lang: Language.TRADITIONAL_CHINESE, // TODO: support multiple lang,
             pagesize: 1000,
             offset,
           },
@@ -46,7 +87,7 @@ function App() {
   const bankGeoJson = useMemo(() => {
     const geojson: FeatureCollection = {
       type: "FeatureCollection",
-      features: banks.map((bank) => ({
+      features: results.map((bank) => ({
         type: "Feature",
         geometry: {
           type: "Point",
@@ -59,7 +100,7 @@ function App() {
     };
 
     return geojson;
-  }, [banks]);
+  }, [results]);
 
   const handleMapClick = (e: mapboxgl.MapLayerMouseEvent) => {
     if (!e.features || !e.features[0]) return;
@@ -126,7 +167,15 @@ function App() {
         onMouseLeave={handleMapMouseLeave}
       >
         <Search
-          banks={banks}
+          address={address}
+          onAddressChange={(address) => setAddress(address)}
+          district={district}
+          districtOptions={searchOptions.district}
+          onDistrictChange={(district) => setDistrict(district)}
+          bankName={bankName}
+          bankNameOptions={searchOptions.bankName}
+          onBankNameChange={(bankName) => setBankName(bankName)}
+          results={results}
           onSearchResultClick={(bank) => setFocusedBank(bank)}
         />
         <Source id={"banks"} type={"geojson"} data={bankGeoJson}>
@@ -145,7 +194,7 @@ function App() {
             latitude={parseFloat(focusedBank.latitude)}
             offset={[0, -20]}
           >
-            <TriangleDownIcon color={"#fff"} fontSize={"3xl"} />
+            <TriangleDownIcon color={"#FFD700"} fontSize={"3xl"} />
           </Marker>
         )}
         {hoveredBank && (

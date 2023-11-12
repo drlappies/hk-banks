@@ -16,9 +16,10 @@ export default function Detail({ isOpen, onClose, bank }: Props) {
       maxW={"300px"}
       overflow={"hidden"}
       transition={"width 0.25s"}
-      bgColor={"#fff"}
+      bgColor={"#222"}
       position={"absolute"}
       right={"0"}
+      color={"#fff"}
     >
       {bank && isOpen && (
         <>

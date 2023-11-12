@@ -1,36 +1,43 @@
-import { useState, useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import {
-  InputGroup,
   Input,
-  InputLeftElement,
-  InputRightElement,
   Box,
   List,
   ListItem,
   ListIcon,
   Text,
+  Select,
 } from "@chakra-ui/react";
-import { SearchIcon, CloseIcon, Search2Icon } from "@chakra-ui/icons";
-import Fuse from "fuse.js";
+import { Search2Icon } from "@chakra-ui/icons";
 import { useMap } from "react-map-gl";
 import { Bank } from "../types";
 
 export interface Props {
-  banks: Bank[];
+  results: Bank[];
+  address: string;
+  onAddressChange: (address: string) => void;
+  district: string;
+  districtOptions: string[];
+  onDistrictChange: (district: string) => void;
+  bankName: string;
+  bankNameOptions: string[];
+  onBankNameChange: (bankName: string) => void;
   onSearchResultClick: (bank: Bank) => void;
 }
 
-export default function Search({ banks, onSearchResultClick }: Props) {
+export default function Search({
+  address,
+  onAddressChange,
+  district,
+  districtOptions,
+  bankName,
+  bankNameOptions,
+  onBankNameChange,
+  onDistrictChange,
+  onSearchResultClick,
+  results,
+}: Props) {
   const { current: map } = useMap();
-  const [search, setSearch] = useState("");
-  const fuse = useMemo(() => {
-    return new Fuse(banks, {
-      keys: ["address", "bank_name", "district", "branch_name"],
-    });
-  }, [banks]);
-  const results = useMemo(() => {
-    return fuse.search(search);
-  }, [fuse, search]);
 
   const handleSearchResultClick = useCallback(
     (bank: Bank) => {
@@ -56,49 +63,77 @@ export default function Search({ banks, onSearchResultClick }: Props) {
       m={"20px"}
       zIndex={"1"}
       w={"300px"}
+      color={"#fff"}
     >
-      <InputGroup>
-        <InputLeftElement>
-          <SearchIcon />
-        </InputLeftElement>
-        <Input
-          borderRadius={"5px"}
-          borderBottomRadius={results.length > 0 ? "0px" : "5px"}
-          bgColor={"#fff"}
-          placeholder={"Search..."}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        {search.length > 0 && (
-          <InputRightElement>
-            <CloseIcon cursor={"pointer"} onClick={() => setSearch("")} />
-          </InputRightElement>
-        )}
-      </InputGroup>
-      {results.length > 0 && (
+      <Select
+        size={"sm"}
+        borderRadius={"5px"}
+        borderColor={"#FFD700"}
+        focusBorderColor={"#FFD700"}
+        bgColor={"#222"}
+        value={district}
+        onChange={(e) => onDistrictChange(e.target.value)}
+        mb={"10px"}
+      >
+        <option value={""}>全部地區</option>
+        {districtOptions.map((district, i) => (
+          <option key={i} value={district}>
+            {district}
+          </option>
+        ))}
+      </Select>
+      <Select
+        size={"sm"}
+        borderRadius={"5px"}
+        bgColor={"#222"}
+        borderColor={"#FFD700"}
+        focusBorderColor={"#FFD700"}
+        value={bankName}
+        onChange={(e) => onBankNameChange(e.target.value)}
+        mb={"10px"}
+      >
+        <option value={""}>全部銀行</option>
+        {bankNameOptions.map((bankName, i) => (
+          <option key={i} value={bankName}>
+            {bankName}
+          </option>
+        ))}
+      </Select>
+      <Input
+        size={"sm"}
+        borderRadius={"5px"}
+        borderColor={"#FFD700"}
+        focusBorderColor={"#FFD700"}
+        borderBottomRadius={results.length > 0 ? "0px" : "5px"}
+        borderBottomColor={"#222"}
+        bgColor={"#222"}
+        placeholder={"地址"}
+        value={address}
+        onChange={(e) => onAddressChange(e.target.value)}
+      />
+      {address.length > 0 && (
         <List
-          h={"300px"}
           maxH={"300px"}
           overflow={"scroll"}
-          bgColor={"#fff"}
+          bgColor={"#222"}
           spacing={"5px"}
           borderBottomRadius={"5px"}
           boxShadow={"rgba(149, 157, 165, 0.2) 0px 8px 24px;"}
           pb={"10px"}
         >
-          {results.map((result) => (
+          {results.map((result, i) => (
             <ListItem
-              key={result.refIndex}
+              key={i}
               display={"flex"}
               alignItems={"center"}
               px={"10px"}
-              onClick={() => handleSearchResultClick(result.item)}
+              onClick={() => handleSearchResultClick(result)}
             >
               <ListIcon as={Search2Icon} fontSize={"xs"} color={"grey"} />
               <Box>
-                <Text fontSize={"sm"}>{result.item.address}</Text>
+                <Text fontSize={"sm"}>{result.address}</Text>
                 <Text fontSize={"xs"} color={"grey"}>
-                  {result.item.bank_name}
+                  {result.bank_name}
                 </Text>
               </Box>
             </ListItem>

@@ -35,7 +35,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://drlappies.github.io/hk-banks
     steps:
       - name: deploy
         uses: actions/deploy-pages@v2

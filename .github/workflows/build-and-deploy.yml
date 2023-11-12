@@ -19,9 +19,11 @@ jobs:
           node-version: 20.9.0
       - name: install-deps
         run: yarn install --frozen-lockfile --production
+      - name: setup-env
+        shell: bash
+        run: |-
+          echo "${{ secrets.REACT_APP_MAPBOX_ACCESS_TOKEN }}" > .env
       - name: build
-        env: 
-          REACT_APP_MAPBOX_ACCESS_TOKEN: ${{ secrets.REACT_APP_MAPBOX_ACCESS_TOKEN }}
         run: yarn build
       - name: upload-artifact
         uses: actions/upload-pages-artifact@v2

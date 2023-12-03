@@ -24,7 +24,7 @@ export interface Parameter {
   from?: string;
   sortby?: string;
   sortorder?: string;
-  lang: string;
+  lang: Lang;
 }
 
 export interface Bank {
@@ -37,7 +37,7 @@ export interface Bank {
   longitude: string;
 }
 
-export enum Language {
+export enum Lang {
   ENGLISH = "en",
   TRADITIONAL_CHINESE = "tc",
   SIMPIFIED_CHINESE = "sc",

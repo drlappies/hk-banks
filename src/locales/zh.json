@@ -1,0 +1,21 @@
+{
+  "translation": {
+    "search": {
+      "all_banks": "全部銀行",
+      "all_districts": "全部地區",
+      "address": "地址",
+      "no_results": "沒有結果"
+    },
+    "setting": {
+      "setting": "設定",
+      "language": {
+        "language": "語言",
+        "option": {
+          "zh": "繁體中文",
+          "zh-cn": "簡體中文",
+          "en": "英文"
+        }
+      }
+    }
+  }
+}

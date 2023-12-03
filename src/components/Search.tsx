@@ -15,6 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { CloseIcon, Search2Icon, SearchIcon } from "@chakra-ui/icons";
 import { useMap } from "react-map-gl";
+import { useTranslation } from "react-i18next";
 import { Bank } from "../types";
 
 export interface Props {
@@ -40,6 +41,7 @@ export default function Search({
   onSearchResultClick,
   results,
 }: Props) {
+  const { t } = useTranslation();
   const { current: map } = useMap();
 
   const handleSearchResultClick = useCallback(
@@ -102,7 +104,7 @@ export default function Search({
         onChange={(e) => onBankNameChange(e.target.value)}
         mb={"10px"}
       >
-        <option value={""}>全部銀行</option>
+        <option value={""}>{t("search.all_banks")}</option>
         {bankNameOptions.map((bankName, i) => (
           <option key={i} value={bankName}>
             {bankName}
@@ -119,7 +121,7 @@ export default function Search({
           onChange={(e) => onDistrictChange(e.target.value)}
           mb={"10px"}
         >
-          <option value={""}>全部地區</option>
+          <option value={""}>{t("search.all_districts")}</option>
           {districtOptions.map((district, i) => (
             <option key={i} value={district}>
               {district}
@@ -136,7 +138,7 @@ export default function Search({
           borderColor={"#FFD700"}
           focusBorderColor={"#FFD700"}
           bgColor={"#222"}
-          placeholder={"地址"}
+          placeholder={t("search.address")}
           value={address}
           onChange={(e) => onAddressChange(e.target.value)}
         />
@@ -160,7 +162,7 @@ export default function Search({
           boxShadow={"rgba(149, 157, 165, 0.2) 0px 8px 24px;"}
         >
           {address.length > 0 && results.length <= 0 && (
-            <Center minH={"100px"}>沒有結果</Center>
+            <Center minH={"100px"}>{t("search.no_results")}</Center>
           )}
           {results.map((result, i) => (
             <ListItem

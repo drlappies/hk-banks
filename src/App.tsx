@@ -1,16 +1,21 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { Container, Box } from "@chakra-ui/react";
+import { Container, Box, IconButton } from "@chakra-ui/react";
+import { SettingsIcon } from "@chakra-ui/icons";
 import { TriangleDownIcon } from "@chakra-ui/icons";
 import Map, { Source, Layer, useMap, Marker, Popup } from "react-map-gl";
-import axios from "axios";
 import type { FeatureCollection } from "geojson";
 import mapboxgl from "mapbox-gl";
 import Fuse from "fuse.js";
-import { Language, type Bank, type Response } from "./types";
+import { useTranslation } from "react-i18next";
+import { type Bank } from "./types";
 import Detail from "./components/Detail";
 import Search from "./components/Search";
+import Setting from "./components/Setting";
+import { getBanks } from "./services/bank.service";
+import { mapI18nCodeToLang } from "./helpers/lang";
 
 function App() {
+  const { i18n } = useTranslation();
   const { current: map } = useMap();
   const [district, setDistrict] = useState("");
   const [bankName, setBankName] = useState("");
@@ -18,6 +23,7 @@ function App() {
   const [banks, setBanks] = useState<Bank[]>([]);
   const [focusedBank, setFocusedBank] = useState<Bank | null>(null);
   const [hoveredBank, setHoveredBank] = useState<Bank | null>(null);
+  const [isSettingOpen, setIsSettingOpen] = useState(false);
 
   const fuse = useMemo(() => {
     return new Fuse(banks, {
@@ -40,31 +46,9 @@ function App() {
   }, [address, fuse, banks, district, bankName]);
 
   const fetchBanks = useCallback(async () => {
-    let list: Bank[] = [];
-    let offset = 0;
-
-    while (true) {
-      const response = await axios.get<Response<Bank>>(
-        "https://api.hkma.gov.hk/public/bank-svf-info/banks-branch-locator",
-        {
-          params: {
-            lang: Language.TRADITIONAL_CHINESE, // TODO: support multiple lang,
-            pagesize: 1000,
-            offset,
-          },
-        }
-      );
-
-      if (response.data.result.datasize <= 0) {
-        break;
-      }
-
-      list = list.concat(response.data.result.records);
-      offset = offset + 1000;
-    }
-
-    setBanks(list);
-  }, []);
+    const banks = await getBanks({ lang: mapI18nCodeToLang(i18n.language) });
+    setBanks(banks);
+  }, [i18n.language]);
 
   const bankGeoJson = useMemo(() => {
     const geojson: FeatureCollection = {
@@ -159,6 +143,19 @@ function App() {
           results={results}
           onSearchResultClick={(bank) => setFocusedBank(bank)}
         />
+        <IconButton
+          position={"absolute"}
+          top={"0"}
+          right={"0"}
+          m={"10px"}
+          _hover={{
+            bgColor: "#FFD700",
+          }}
+          color={"#222"}
+          aria-label={"settings"}
+          icon={<SettingsIcon />}
+          onClick={() => setIsSettingOpen((prevState) => !prevState)}
+        />
         <Source id={"banks"} type={"geojson"} data={bankGeoJson}>
           <Layer
             id={"banks-layer"}
@@ -191,6 +188,7 @@ function App() {
           </Popup>
         )}
       </Map>
+      <Setting isOpen={isSettingOpen} onClose={() => setIsSettingOpen(false)} />
       <Detail
         isOpen={Boolean(focusedBank)}
         bank={focusedBank}

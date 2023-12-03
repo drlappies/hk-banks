@@ -1,0 +1,21 @@
+{
+  "translation": {
+    "search": {
+      "all_banks": "All Banks",
+      "all_districts": "All Districts",
+      "address": "Address",
+      "no_results": "No Results"
+    },
+    "setting": {
+      "setting": "Setting",
+      "language": {
+        "language": "Language",
+        "option": {
+          "zh": "Traditional Chinese",
+          "zh-cn": "Simplified Chinese",
+          "en": "English"
+        }
+      }
+    }
+  }
+}
